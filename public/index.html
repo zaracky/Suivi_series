@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guide — mes séries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">▣</span>
+    <span class="brand-name">Guide</span>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-view="suivi">À suivre</button>
+    <button class="tab" data-view="calendrier">Calendrier</button>
+  </nav>
+  <button class="btn-add" id="openAdd">+ Ajouter une série</button>
+</header>
+
+<main>
+  <!-- Vue "À suivre" -->
+  <section id="view-suivi" class="view active">
+    <div id="seriesList" class="series-grid"></div>
+    <p id="emptyState" class="empty-state" hidden>
+      Aucune série suivie pour l'instant. Ajoute-en une pour commencer.
+    </p>
+  </section>
+
+  <!-- Vue "Calendrier" -->
+  <section id="view-calendrier" class="view">
+    <div id="calendarList" class="calendar-list"></div>
+    <p id="calendarEmpty" class="empty-state" hidden>
+      Aucune date de sortie connue pour le moment.
+    </p>
+  </section>
+</main>
+
+<!-- Panneau détail d'une série (saisons / épisodes) -->
+<div id="detailOverlay" class="overlay" hidden>
+  <div class="overlay-panel">
+    <button class="overlay-close" id="closeDetail">✕</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- Panneau ajout de série -->
+<div id="addOverlay" class="overlay" hidden>
+  <div class="overlay-panel">
+    <button class="overlay-close" id="closeAdd">✕</button>
+    <h2>Ajouter une série</h2>
+    <input type="text" id="searchInput" placeholder="Nom de la série…" autocomplete="off" />
+    <div id="searchResults" class="search-results"></div>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
