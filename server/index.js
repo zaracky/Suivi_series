@@ -23,6 +23,11 @@ app.post('/api/admin/send-reminders', async (req, res) => {
   await sendTomorrowReminders();
   res.json({ ok: true });
 });
+app.post('/api/admin/test-discord', async (req, res) => {
+  const { sendDiscordMessage } = require('./discord');
+  await sendDiscordMessage('✅ Test : la connexion entre le dashboard et Discord fonctionne.');
+  res.json({ ok: true });
+});
 
 // Sert le dashboard statique
 app.use(express.static(path.join(__dirname, '..', 'public')));
