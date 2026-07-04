@@ -50,15 +50,38 @@ async function sendTomorrowReminders() {
        FROM episodes e
        JOIN series s ON s.id = e.series_id
        WHERE e.air_date = (CURRENT_DATE + INTERVAL '1 day')
-         AND e.reminder_sent = false`
+         AND e.reminder_sent = false
+       ORDER BY s.name, e.season_number, e.episode_number`
     );
 
+    // Regroupe les épisodes par série, pour n'envoyer qu'un seul message
+    // même si plusieurs épisodes sortent le même jour (ex: saison complète d'un coup).
+    const bySeries = new Map();
     for (const ep of rows) {
-      const message = `📺 **Demain** : *${ep.series_name}* — S${String(ep.season_number).padStart(2, '0')}E${String(ep.episode_number).padStart(2, '0')}${ep.episode_name ? ` — ${ep.episode_name}` : ''}`;
-      await sendDiscordMessage(message);
-      await pool.query('UPDATE episodes SET reminder_sent = true WHERE id = $1', [ep.id]);
+      if (!bySeries.has(ep.series_name)) bySeries.set(ep.series_name, []);
+      bySeries.get(ep.series_name).push(ep);
     }
-    console.log(`[cron] ${rows.length} rappel(s) envoyé(s).`);
+
+    for (const [seriesName, episodes] of bySeries) {
+      let message;
+      if (episodes.length === 1) {
+        const ep = episodes[0];
+        message = `📺 **Demain** : *${seriesName}* — S${String(ep.season_number).padStart(2, '0')}E${String(ep.episode_number).padStart(2, '0')}${ep.episode_name ? ` — ${ep.episode_name}` : ''}`;
+      } else {
+        // Plusieurs épisodes le même jour : on regarde si c'est une saison entière
+        // (numéros d'épisodes qui se suivent) pour un message plus lisible.
+        const seasons = [...new Set(episodes.map((e) => e.season_number))];
+        const seasonLabel = seasons.length === 1
+          ? `Saison ${seasons[0]}`
+          : `Saisons ${seasons.join(', ')}`;
+        message = `📺 **Demain** : *${seriesName}* — ${seasonLabel} complète (${episodes.length} épisodes)`;
+      }
+      await sendDiscordMessage(message);
+      for (const ep of episodes) {
+        await pool.query('UPDATE episodes SET reminder_sent = true WHERE id = $1', [ep.id]);
+      }
+    }
+    console.log(`[cron] ${bySeries.size} message(s) envoyé(s) pour ${rows.length} épisode(s).`);
   } catch (err) {
     console.error('[cron] Erreur envoi rappels :', err);
   }
