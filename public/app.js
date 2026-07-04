@@ -203,7 +203,11 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 function formatDate(dateStr) {
-  const d = new Date(dateStr + 'T00:00:00');
+  // PostgreSQL peut renvoyer soit "2024-05-01" soit "2024-05-01T00:00:00.000Z"
+  // selon le driver. On ne garde que les 10 premiers caractères (YYYY-MM-DD)
+  // pour éviter de construire une date invalide en concaténant deux fois l'heure.
+  const datePart = String(dateStr).slice(0, 10);
+  const d = new Date(datePart + 'T00:00:00');
   return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 }
 
